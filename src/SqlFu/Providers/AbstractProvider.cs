@@ -2,6 +2,9 @@ using System;
 using System.Data;
 using System.Data.Common;
 using SqlFu.DDL;
+#if NET45
+using System.Threading.Tasks;
+#endif
 
 namespace SqlFu.Providers
 {
@@ -21,6 +24,12 @@ namespace SqlFu.Providers
 
         public abstract LastInsertId ExecuteInsert(DbCommand cmd, string idKey);
 
+#if NET45
+        public virtual Task<LastInsertId> ExecuteInsertAsync(DbCommand cmd, string idKey)
+        {
+            return new Task<LastInsertId>(() => ExecuteInsert(cmd, idKey));
+        }
+#endif
 
         public DbConnection CreateConnection()
         {

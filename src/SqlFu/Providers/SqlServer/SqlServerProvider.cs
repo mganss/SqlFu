@@ -168,6 +168,16 @@ sqlfu_paged WHERE sqlfu_rn>@{3} AND sqlfu_rn<=(@{3}+@{4})", orderBy, columns, bo
             return new LastInsertId(rez);
         }
 
+#if NET45
+        public override async System.Threading.Tasks.Task<LastInsertId> ExecuteInsertAsync(DbCommand cmd, string idKey)
+        {
+            cmd.CommandText += ";Select SCOPE_IDENTITY() as id";
+
+            var rez = await cmd.ExecuteScalarAsync();
+            return new LastInsertId(rez);            
+        }
+#endif
+
         public const string ParameterPrefix = "@";
 
         public override string ParamPrefix

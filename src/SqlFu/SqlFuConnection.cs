@@ -3,6 +3,9 @@ using System.Configuration;
 using System.Data;
 using System.Data.Common;
 using SqlFu.DDL;
+#if NET45
+using System.Threading.Tasks;
+#endif
 
 namespace SqlFu
 {
@@ -53,6 +56,34 @@ namespace SqlFu
             Connection.Open();
         }
 
+#if NET45
+        public SqlFuConnection(bool async)
+        {
+        }
+
+        private Task InitAsync(string cnxString, IHaveDbProvider provider)
+        {
+            cnxString.MustNotBeEmpty();
+            provider.MustNotBeNull();
+            _provider = provider;
+            _conex = _provider.CreateConnection();
+            _conex.ConnectionString = cnxString;
+            return Connection.OpenAsync();
+        }
+
+        public static async Task<SqlFuConnection> OpenAsync(string connectionStringName)
+        {
+            var c = new SqlFuConnection(true);
+            var cnx = ConfigurationManager.ConnectionStrings[connectionStringName];
+            if (cnx == null)
+                throw new InvalidOperationException(
+                    "Can't find connection '{0}' in the configuration file.".ToFormat(connectionStringName));
+
+            await c.InitAsync(cnx.ConnectionString, ProviderFactory.GetProviderByName(cnx.ProviderName));
+
+            return c;
+        }
+#endif
 
         public StoredProcedureResult ExecuteStoredProcedure(string sprocName, object arguments = null)
         {

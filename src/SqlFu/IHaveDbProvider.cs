@@ -1,6 +1,9 @@
 using System.Data;
 using System.Data.Common;
 using SqlFu.DDL;
+#if NET45
+using System.Threading.Tasks;
+#endif
 
 namespace SqlFu
 {
@@ -12,6 +15,9 @@ namespace SqlFu
     public interface IHaveDbProvider : IEscapeDbIdentifier
     {
         LastInsertId ExecuteInsert(DbCommand cmd, string idKey);
+#if NET45
+        Task<LastInsertId> ExecuteInsertAsync(DbCommand cmd, string idKey);
+#endif
         DbConnection CreateConnection();
         string ParamPrefix { get; }
         void MakePaged(string sql, out string selecSql, out string countSql);
